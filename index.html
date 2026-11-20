@@ -223,5 +223,30 @@ addEventListener('keydown',e=>{if(e.target.closest('input,textarea'))return;
   else if(e.key==='Home'){e.preventDefault();go(0);} else if(e.key==='End'){e.preventDefault();go(S.length-1);}});
 document.querySelectorAll('a.hot[href^="#"]').forEach(a=>a.addEventListener('click',e=>{e.preventDefault();go(+a.getAttribute('href').slice(2)-1);history.replaceState(null,'',a.getAttribute('href'));}));
 </script>
+<script>
+(()=>{
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches)return;
+  const host=document.getElementById('s1');if(!host)return;
+  const cv=document.createElement('canvas');cv.setAttribute('aria-hidden','true');
+  cv.style.cssText='position:absolute;inset:0;width:100%;height:100%;pointer-events:none;z-index:3;transition:opacity .8s';
+  host.appendChild(cv);const cx=cv.getContext('2d');
+  const leaf=new Path2D('M50 2L57 20L67 14L64 38L80 26L84 34L98 31L92 46L99 51L76 66L80 76L58 72L53 86L53 100L47 100L47 86L42 72L20 76L24 66L1 51L8 46L2 31L16 34L20 26L36 38L33 14L43 20Z');
+  const cols=['#d9480f','#e8590c','#f08c00','#c92a2a','#e67700','#b02525'];
+  const rnd=(a,b)=>a+Math.random()*(b-a);
+  let W=0,H=0,L=[],raf=0,t=0;
+  function size(){const d=Math.min(devicePixelRatio||1,2),r=host.getBoundingClientRect();W=r.width;H=r.height;
+    cv.width=W*d;cv.height=H*d;cx.setTransform(d,0,0,d,0,0);
+    const n=W<700?10:20,k=W/1280;
+    while(L.length<n)L.push({x:rnd(0,W),y:rnd(-H*.3,H),s:rnd(14,28)*Math.max(k,.6),vy:rnd(.5,1.1),sw:rnd(.6,1.6),ph:rnd(0,6.28),r:rnd(0,6.28),vr:rnd(-.02,.02),fl:rnd(.01,.03),c:cols[Math.random()*cols.length|0],a:rnd(.55,.9)});}
+  function frame(){t++;cx.clearRect(0,0,W,H);
+    for(const p of L){p.y+=p.vy;p.x+=Math.sin(t*.01+p.ph)*p.sw*.5;p.r+=p.vr;
+      cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.scale(p.s/100*Math.cos(t*p.fl+p.ph),p.s/100);cx.translate(-50,-50);
+      cx.globalAlpha=p.a;cx.fillStyle=p.c;cx.fill(leaf);cx.restore();}
+    raf=requestAnimationFrame(frame);}
+  size();addEventListener('resize',size);raf=requestAnimationFrame(frame);
+  // 3초 뒤 서서히 사라지고 완전히 정리
+  setTimeout(()=>{cv.style.opacity='0';setTimeout(()=>{cancelAnimationFrame(raf);removeEventListener('resize',size);cv.remove();},900);},3000);
+})();
+</script>
 </body>
 </html>
